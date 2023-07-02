@@ -1,4 +1,4 @@
-package domainapp.modules.simple.dom.so;
+package domainapp.modules.simple.dom.usuario;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import domainapp.modules.simple.types.Name;
 @DomainService(nature = NatureOfService.VIEW)
 @Priority(PriorityPrecedence.EARLY)
 @RequiredArgsConstructor(onConstructor_ = {@Inject} )
-public class SimpleObjects {
+public class Usuarios {
 
     final RepositoryService repositoryService;
     final JdoSupportService jdoSupportService;
@@ -36,26 +36,26 @@ public class SimpleObjects {
 
     @Action(semantics = SemanticsOf.NON_IDEMPOTENT)
     @ActionLayout(promptStyle = PromptStyle.DIALOG_SIDEBAR)
-    public SimpleObject create(
+    public Usuario create(
             @Name final String name) {
-        return repositoryService.persist(SimpleObject.withName(name));
+        return repositoryService.persist(Usuario.withName(name));
     }
 
 
     @Action(semantics = SemanticsOf.SAFE)
     @ActionLayout(bookmarking = BookmarkPolicy.AS_ROOT, promptStyle = PromptStyle.DIALOG_SIDEBAR)
-    public List<SimpleObject> findByName(
+    public List<Usuario> findByName(
             @Name final String name
             ) {
         return repositoryService.allMatches(
-                    Query.named(SimpleObject.class, SimpleObject.NAMED_QUERY__FIND_BY_NAME_LIKE)
+                    Query.named(Usuario.class, Usuario.NAMED_QUERY__FIND_BY_NAME_LIKE)
                         .withParameter("name", name));
     }
 
 
-    public SimpleObject findByNameExact(final String name) {
+    public Usuario findByNameExact(final String name) {
         return repositoryService.firstMatch(
-                    Query.named(SimpleObject.class, SimpleObject.NAMED_QUERY__FIND_BY_NAME_EXACT)
+                    Query.named(Usuario.class, Usuario.NAMED_QUERY__FIND_BY_NAME_EXACT)
                         .withParameter("name", name))
                 .orElse(null);
     }
@@ -64,8 +64,8 @@ public class SimpleObjects {
 
     @Action(semantics = SemanticsOf.SAFE)
     @ActionLayout(bookmarking = BookmarkPolicy.AS_ROOT)
-    public List<SimpleObject> listAll() {
-        return repositoryService.allInstances(SimpleObject.class);
+    public List<Usuario> listAll() {
+        return repositoryService.allInstances(Usuario.class);
     }
 
 

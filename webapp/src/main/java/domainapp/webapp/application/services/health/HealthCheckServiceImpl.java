@@ -5,20 +5,20 @@ import javax.inject.Named;
 
 import org.springframework.stereotype.Service;
 
+import domainapp.modules.simple.dom.usuario.Usuarios;
+
 import org.apache.causeway.applib.services.health.Health;
 import org.apache.causeway.applib.services.health.HealthCheckService;
-
-import domainapp.modules.simple.dom.so.SimpleObjects;
 
 @Service
 @Named("domainapp.HealthCheckServiceImpl")
 public class HealthCheckServiceImpl implements HealthCheckService {
 
-    private final SimpleObjects simpleObjects;
+    private final Usuarios usuarios;
 
     @Inject
-    public HealthCheckServiceImpl(SimpleObjects simpleObjects) {
-        this.simpleObjects = simpleObjects;
+    public HealthCheckServiceImpl(Usuarios usuarios) {
+        this.usuarios = usuarios;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package domainapp.modules.simple.dom.so;
+package domainapp.modules.simple.dom.usuario;
 
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -64,37 +64,37 @@ import domainapp.modules.simple.types.Notes;
     schema = SimpleModule.SCHEMA,
     identityType=IdentityType.DATASTORE)
 @Unique(
-        name = "SimpleObject__name__UNQ", members = { "name" }
+        name = "Usuario__name__UNQ", members = { "name" }
 )
 @Queries({
         @Query(
-                name = SimpleObject.NAMED_QUERY__FIND_BY_NAME_LIKE,
+                name = Usuario.NAMED_QUERY__FIND_BY_NAME_LIKE,
                 value = "SELECT " +
-                        "FROM domainapp.modules.simple.dom.so.SimpleObject " +
+                        "FROM domainapp.modules.simple.dom.usuario.Usuario " +
                         "WHERE name.indexOf(:name) >= 0"
         ),
         @Query(
-                name = SimpleObject.NAMED_QUERY__FIND_BY_NAME_EXACT,
+                name = Usuario.NAMED_QUERY__FIND_BY_NAME_EXACT,
                 value = "SELECT " +
-                        "FROM domainapp.modules.simple.dom.so.SimpleObject " +
+                        "FROM domainapp.modules.simple.dom.usuario.Usuario " +
                         "WHERE name == :name"
         )
 })
 @DatastoreIdentity(strategy=IdGeneratorStrategy.IDENTITY, column="id")
 @Version(strategy= VersionStrategy.DATE_TIME, column="version")
-@Named(SimpleModule.NAMESPACE + ".SimpleObject")
+@Named(SimpleModule.NAMESPACE + ".Usuario")
 @DomainObject(entityChangePublishing = Publishing.ENABLED)
 @DomainObjectLayout(tableDecorator = TableDecorator.DatatablesNet.class)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @XmlJavaTypeAdapter(PersistentEntityAdapter.class)
 @ToString(onlyExplicitlyIncluded = true)
-public class SimpleObject implements Comparable<SimpleObject>, CalendarEventable {
+public class Usuario implements Comparable<Usuario>, CalendarEventable {
 
     static final String NAMED_QUERY__FIND_BY_NAME_LIKE = "SimpleObject.findByNameLike";
     static final String NAMED_QUERY__FIND_BY_NAME_EXACT = "SimpleObject.findByNameExact";
 
-    public static SimpleObject withName(final String name) {
-        val simpleObject = new SimpleObject();
+    public static Usuario withName(final String name) {
+        val simpleObject = new Usuario();
         simpleObject.setName(name);
         return simpleObject;
     }
@@ -159,7 +159,7 @@ public class SimpleObject implements Comparable<SimpleObject>, CalendarEventable
     @ActionLayout(
             associateWith = "name", promptStyle = PromptStyle.INLINE,
             describedAs = "Updates the name of this object, certain characters (" + PROHIBITED_CHARACTERS + ") are not allowed.")
-    public SimpleObject updateName(
+    public Usuario updateName(
             @Name final String name) {
         setName(name);
         return this;
@@ -181,7 +181,7 @@ public class SimpleObject implements Comparable<SimpleObject>, CalendarEventable
 
     @Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
     @ActionLayout(associateWith = "attachment", position = ActionLayout.Position.PANEL)
-    public SimpleObject updateAttachment(
+    public Usuario updateAttachment(
             @Nullable final Blob attachment) {
         setAttachment(attachment);
         return this;
@@ -205,11 +205,11 @@ public class SimpleObject implements Comparable<SimpleObject>, CalendarEventable
 
 
 
-    private final static Comparator<SimpleObject> comparator =
-            Comparator.comparing(SimpleObject::getName);
+    private final static Comparator<Usuario> comparator =
+            Comparator.comparing(Usuario::getName);
 
     @Override
-    public int compareTo(final SimpleObject other) {
+    public int compareTo(final Usuario other) {
         return comparator.compare(this, other);
     }
 

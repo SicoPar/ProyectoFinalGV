@@ -7,6 +7,9 @@ import javax.inject.Inject;
 
 import org.springframework.core.io.ClassPathResource;
 
+import domainapp.modules.simple.dom.usuario.Usuario;
+import domainapp.modules.simple.dom.usuario.Usuarios;
+
 import org.apache.causeway.applib.services.clock.ClockService;
 import org.apache.causeway.applib.services.registry.ServiceRegistry;
 import org.apache.causeway.applib.value.Blob;
@@ -22,12 +25,9 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.experimental.Accessors;
 
-import domainapp.modules.simple.dom.so.SimpleObject;
-import domainapp.modules.simple.dom.so.SimpleObjects;
-
 @RequiredArgsConstructor
 public enum SimpleObject_persona
-implements Persona<SimpleObject, SimpleObject_persona.Builder> {
+implements Persona<Usuario, SimpleObject_persona.Builder> {
 
     FOO("Foo", "Foo.pdf"),
     BAR("Bar", "Bar.pdf"),
@@ -49,19 +49,19 @@ implements Persona<SimpleObject, SimpleObject_persona.Builder> {
     }
 
     @Override
-    public SimpleObject findUsing(final ServiceRegistry serviceRegistry) {
-        return serviceRegistry.lookupService(SimpleObjects.class).map(x -> x.findByNameExact(name)).orElseThrow();
+    public Usuario findUsing(final ServiceRegistry serviceRegistry) {
+        return serviceRegistry.lookupService(Usuarios.class).map(x -> x.findByNameExact(name)).orElseThrow();
     }
 
     @Accessors(chain = true)
-    public static class Builder extends BuilderScriptWithResult<SimpleObject> {
+    public static class Builder extends BuilderScriptWithResult<Usuario> {
 
         @Getter @Setter private SimpleObject_persona persona;
 
         @Override
-        protected SimpleObject buildResult(final ExecutionContext ec) {
+        protected Usuario buildResult(final ExecutionContext ec) {
 
-            val simpleObject = wrap(simpleObjects).create(persona.name);
+            val simpleObject = wrap(usuarios).create(persona.name);
 
             if (persona.contentFileName != null) {
                 val bytes = toBytes(persona.contentFileName);
@@ -91,13 +91,13 @@ implements Persona<SimpleObject, SimpleObject_persona.Builder> {
 
         // -- DEPENDENCIES
 
-        @Inject SimpleObjects simpleObjects;
+        @Inject Usuarios usuarios;
         @Inject ClockService clockService;
         @Inject FakeDataService fakeDataService;
     }
 
     public static class PersistAll
-            extends PersonaEnumPersistAll<SimpleObject, SimpleObject_persona, Builder> {
+            extends PersonaEnumPersistAll<Usuario, SimpleObject_persona, Builder> {
         public PersistAll() {
             super(SimpleObject_persona.class);
         }

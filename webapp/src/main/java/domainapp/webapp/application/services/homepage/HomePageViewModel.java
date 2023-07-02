@@ -15,8 +15,8 @@ import org.apache.causeway.applib.annotation.ObjectSupport;
 import org.apache.causeway.applib.annotation.TableDecorator;
 
 import domainapp.modules.simple.SimpleModule;
-import domainapp.modules.simple.dom.so.SimpleObject;
-import domainapp.modules.simple.dom.so.SimpleObjects;
+import domainapp.modules.simple.dom.usuario.Usuario;
+import domainapp.modules.simple.dom.usuario.Usuarios;
 
 @Named(SimpleModule.NAMESPACE + ".HomePageViewModel")
 @DomainObject(nature = Nature.VIEW_MODEL)
@@ -30,9 +30,9 @@ public class HomePageViewModel {
 
     @Collection
     @CollectionLayout(tableDecorator = TableDecorator.DatatablesNet.class)
-    public List<SimpleObject> getObjects() {
-        return simpleObjects.listAll();
+    public List<Usuario> getObjects() {
+        return usuarios.listAll();
     }
 
-    @Inject SimpleObjects simpleObjects;
+    @Inject Usuarios usuarios;
 }
