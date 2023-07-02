@@ -56,32 +56,19 @@ import lombok.ToString;
 import lombok.val;
 
 import domainapp.modules.simple.SimpleModule;
+import domainapp.modules.simple.dom.usuario.Usuario;
 import domainapp.modules.simple.types.Name;
 import domainapp.modules.simple.types.Notes;
 
-
-@PersistenceCapable(
-    schema = SimpleModule.SCHEMA,
-    identityType=IdentityType.DATASTORE)
-@Unique(
-        name = "Vehiculo__name__UNQ", members = { "name" }
-)
+@PersistenceCapable(schema = SimpleModule.SCHEMA, identityType = IdentityType.DATASTORE)
+@Unique(name = "Vehiculo__name__UNQ", members = { "name" })
 @Queries({
-        @Query(
-                name = Vehiculo.NAMED_QUERY__FIND_BY_NAME_LIKE,
-                value = "SELECT " +
-                        "FROM domainapp.modules.simple.dom.vehiculo" +
-                        "WHERE name.indexOf(:name) >= 0"
-        ),
-        @Query(
-                name = Vehiculo.NAMED_QUERY__FIND_BY_NAME_EXACT,
-                value = "SELECT " +
-                        "FROM domainapp.modules.simple.dom.vehiculo " +
-                        "WHERE name == :name"
-        )
-})
-@DatastoreIdentity(strategy=IdGeneratorStrategy.IDENTITY, column="id")
-@Version(strategy= VersionStrategy.DATE_TIME, column="version")
+		@Query(name = Vehiculo.NAMED_QUERY__FIND_BY_NAME_LIKE, value = "SELECT "
+				+ "FROM domainapp.modules.simple.dom.vehiculo" + "WHERE name.indexOf(:name) >= 0"),
+		@Query(name = Vehiculo.NAMED_QUERY__FIND_BY_NAME_EXACT, value = "SELECT "
+				+ "FROM domainapp.modules.simple.dom.vehiculo " + "WHERE name == :name") })
+@DatastoreIdentity(strategy = IdGeneratorStrategy.IDENTITY, column = "id")
+@Version(strategy = VersionStrategy.DATE_TIME, column = "version")
 @Named(SimpleModule.NAMESPACE + ".Vehiculo")
 @DomainObject(entityChangePublishing = Publishing.ENABLED)
 @DomainObjectLayout(tableDecorator = TableDecorator.DatatablesNet.class)
@@ -90,127 +77,128 @@ import domainapp.modules.simple.types.Notes;
 @ToString(onlyExplicitlyIncluded = true)
 public class Vehiculo implements Comparable<Vehiculo>, CalendarEventable {
 
-    static final String NAMED_QUERY__FIND_BY_NAME_LIKE = "SimpleObject.findByNameLike";
-    static final String NAMED_QUERY__FIND_BY_NAME_EXACT = "SimpleObject.findByNameExact";
+	static final String NAMED_QUERY__FIND_BY_NAME_LIKE = "SimpleObject.findByNameLike";
+	static final String NAMED_QUERY__FIND_BY_NAME_EXACT = "SimpleObject.findByNameExact";
 
-    public static Vehiculo withName(final String name) {
-        val simpleObject = new Vehiculo();
-        simpleObject.setName(name);
-        return simpleObject;
-    }
+	public static Vehiculo withName(final String name) {
+		val simpleObject = new Vehiculo();
+		simpleObject.setName(name);
+		return simpleObject;
+	}
 
-    @Inject @NotPersistent RepositoryService repositoryService;
-    @Inject @NotPersistent TitleService titleService;
-    @Inject @NotPersistent MessageService messageService;
+	@Inject
+	@NotPersistent
+	RepositoryService repositoryService;
+	@Inject
+	@NotPersistent
+	TitleService titleService;
+	@Inject
+	@NotPersistent
+	MessageService messageService;
 
+	@Title
+	@Name
+	@Getter
+	@Setter
+	@ToString.Include
+	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, sequence = "1")
+	private String name;
 
+	@Notes
+	@Getter
+	@Setter
+	@Property(commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
+	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.DETAILS, sequence = "2")
+	private String notes;
 
-    @Title
-    @Name
-    @Getter @Setter @ToString.Include
-    @PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, sequence = "1")
-    private String name;
+	@Column(name = "vehiculos")
+	@PropertyLayout(fieldSetId = "name", sequence = "2")
+	@Getter
+	@Setter
+	private Usuario usuario;
 
-    @Notes
-    @Getter @Setter
-    @Property(commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
-    @PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.DETAILS, sequence = "2")
-    private String notes;
+	@PdfJsViewer
+	@Getter
+	@Setter
+	@Persistent(defaultFetchGroup = "false", columns = { @Column(name = "attachment_name"),
+			@Column(name = "attachment_mimetype"), @Column(name = "attachment_bytes") })
+	@Property()
+	@PropertyLayout(fieldSetId = "content", sequence = "1")
+	private Blob attachment;
 
+	@Property(optionality = Optionality.OPTIONAL, editing = Editing.ENABLED)
+	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.DETAILS, sequence = "3")
+	@Column(allowsNull = "true")
+	@Getter
+	@Setter
+	private java.time.LocalDate lastCheckedIn;
 
-    @PdfJsViewer
-    @Getter @Setter
-    @Persistent(defaultFetchGroup="false", columns = {
-            @Column(name = "attachment_name"),
-            @Column(name = "attachment_mimetype"),
-            @Column(name = "attachment_bytes")
-    })
-    @Property()
-    @PropertyLayout(fieldSetId = "content", sequence = "1")
-    private Blob attachment;
+	@Override
+	public String getCalendarName() {
+		return "Last checked-in";
+	}
 
+	@Override
+	public CalendarEvent toCalendarEvent() {
+		if (getLastCheckedIn() != null) {
+			long epochMillis = getLastCheckedIn().toEpochSecond(LocalTime.MIDNIGHT,
+					ZoneOffset.systemDefault().getRules().getOffset(getLastCheckedIn().atStartOfDay())) * 1000L;
+			return new CalendarEvent(epochMillis, getCalendarName(), titleService.titleOf(this), getNotes());
+		} else {
+			return null;
+		}
+	}
 
+	@Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
+	@ActionLayout(associateWith = "name", promptStyle = PromptStyle.INLINE, describedAs = "Updates the name of this object, certain characters ("
+			+ PROHIBITED_CHARACTERS + ") are not allowed.")
+	public Vehiculo updateName(@Name final String name) {
+		setName(name);
+		return this;
+	}
 
+	@MemberSupport
+	public String default0UpdateName() {
+		return getName();
+	}
 
-    @Property(optionality = Optionality.OPTIONAL, editing = Editing.ENABLED)
-    @PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.DETAILS, sequence = "3")
-    @Column(allowsNull = "true")
-    @Getter @Setter
-    private java.time.LocalDate lastCheckedIn;
+	@MemberSupport
+	public String validate0UpdateName(final String newName) {
+		for (char prohibitedCharacter : PROHIBITED_CHARACTERS.toCharArray()) {
+			if (newName.contains("" + prohibitedCharacter)) {
+				return "Character '" + prohibitedCharacter + "' is not allowed.";
+			}
+		}
+		return null;
+	}
 
+	static final String PROHIBITED_CHARACTERS = "&%$!";
 
-    @Override
-    public String getCalendarName() {
-        return "Last checked-in";
-    }
+	@Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
+	@ActionLayout(associateWith = "attachment", position = ActionLayout.Position.PANEL)
+	public Vehiculo updateAttachment(@Nullable final Blob attachment) {
+		setAttachment(attachment);
+		return this;
+	}
 
-    @Override
-    public CalendarEvent toCalendarEvent() {
-        if (getLastCheckedIn() != null) {
-            long epochMillis = getLastCheckedIn().toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.systemDefault().getRules().getOffset(getLastCheckedIn().atStartOfDay())) * 1000L;
-            return new CalendarEvent(epochMillis, getCalendarName(), titleService.titleOf(this), getNotes());
-        } else {
-            return null;
-        }
-    }
+	@MemberSupport
+	public Blob default0UpdateAttachment() {
+		return getAttachment();
+	}
 
+	@Action(semantics = NON_IDEMPOTENT_ARE_YOU_SURE)
+	@ActionLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, position = ActionLayout.Position.PANEL, describedAs = "Deletes this object from the persistent datastore")
+	public void delete() {
+		final String title = titleService.titleOf(this);
+		messageService.informUser(String.format("'%s' deleted", title));
+		repositoryService.removeAndFlush(this);
+	}
 
-    @Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
-    @ActionLayout(
-            associateWith = "name", promptStyle = PromptStyle.INLINE,
-            describedAs = "Updates the name of this object, certain characters (" + PROHIBITED_CHARACTERS + ") are not allowed.")
-    public Vehiculo updateName(
-            @Name final String name) {
-        setName(name);
-        return this;
-    }
-    @MemberSupport public String default0UpdateName() {
-        return getName();
-    }
-    @MemberSupport public String validate0UpdateName(final String newName) {
-        for (char prohibitedCharacter : PROHIBITED_CHARACTERS.toCharArray()) {
-            if( newName.contains(""+prohibitedCharacter)) {
-                return "Character '" + prohibitedCharacter + "' is not allowed.";
-            }
-        }
-        return null;
-    }
-    static final String PROHIBITED_CHARACTERS = "&%$!";
+	private final static Comparator<Vehiculo> comparator = Comparator.comparing(Vehiculo::getName);
 
-
-
-    @Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
-    @ActionLayout(associateWith = "attachment", position = ActionLayout.Position.PANEL)
-    public Vehiculo updateAttachment(
-            @Nullable final Blob attachment) {
-        setAttachment(attachment);
-        return this;
-    }
-    @MemberSupport public Blob default0UpdateAttachment() {
-        return getAttachment();
-    }
-
-
-
-    @Action(semantics = NON_IDEMPOTENT_ARE_YOU_SURE)
-    @ActionLayout(
-            fieldSetId = LayoutConstants.FieldSetId.IDENTITY,
-            position = ActionLayout.Position.PANEL,
-            describedAs = "Deletes this object from the persistent datastore")
-    public void delete() {
-        final String title = titleService.titleOf(this);
-        messageService.informUser(String.format("'%s' deleted", title));
-        repositoryService.removeAndFlush(this);
-    }
-
-
-
-    private final static Comparator<Vehiculo> comparator =
-            Comparator.comparing(Vehiculo::getName);
-
-    @Override
-    public int compareTo(final Vehiculo other) {
-        return comparator.compare(this, other);
-    }
+	@Override
+	public int compareTo(final Vehiculo other) {
+		return comparator.compare(this, other);
+	}
 
 }
