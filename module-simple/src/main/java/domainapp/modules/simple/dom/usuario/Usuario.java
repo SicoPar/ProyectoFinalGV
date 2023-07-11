@@ -58,8 +58,12 @@ import lombok.val;
 
 import domainapp.modules.simple.SimpleModule;
 import domainapp.modules.simple.dom.vehiculo.Vehiculo;
+import domainapp.modules.simple.types.Documento;
+import domainapp.modules.simple.types.Email;
 import domainapp.modules.simple.types.Name;
+import domainapp.modules.simple.types.Nombre;
 import domainapp.modules.simple.types.Notes;
+import domainapp.modules.simple.types.Telefono;
 
 @PersistenceCapable(schema = SimpleModule.SCHEMA, identityType = IdentityType.DATASTORE)
 @Unique(name = "Usuario__name__UNQ", members = { "name" })
@@ -81,9 +85,17 @@ public class Usuario implements Comparable<Usuario>, CalendarEventable {
 	static final String NAMED_QUERY__FIND_BY_NAME_LIKE = "SimpleObject.findByNameLike";
 	static final String NAMED_QUERY__FIND_BY_NAME_EXACT = "SimpleObject.findByNameExact";
 
-	public static Usuario withName(final String name) {
+	public static Usuario withName(String name) {
+	    return withName(name, null,null,null,null);
+	}
+	
+	public static Usuario withName(final String name, String nombre, String documento, String telefono, String email) {
 		val simpleObject = new Usuario();
 		simpleObject.setName(name);
+		simpleObject.setNombre(nombre);
+		simpleObject.setDocumento(documento);
+		simpleObject.setTelefono(telefono);
+		simpleObject.setEmail(email);
 		return simpleObject;
 	}
 
@@ -104,6 +116,30 @@ public class Usuario implements Comparable<Usuario>, CalendarEventable {
 	@ToString.Include
 	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, sequence = "1")
 	private String name;
+	@Nombre
+	@Getter
+	@Setter
+	@ToString.Include
+	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, sequence = "2")
+	private String nombre;
+
+	@Documento
+	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, sequence = "3")
+	@Getter
+	@Setter
+	private String documento;
+
+	@Telefono
+	@PropertyLayout(fieldSetId = "contactDetails", sequence = "1,5")
+	@Getter
+	@Setter
+	private String telefono;
+
+	@Email
+	@PropertyLayout(fieldSetId = "contactDetails", sequence = "1,6")
+	@Getter
+	@Setter
+	private String email;
 
 	@Notes
 	@Getter
@@ -116,14 +152,14 @@ public class Usuario implements Comparable<Usuario>, CalendarEventable {
 	@Persistent(mappedBy = "usuario")
 	private List<Vehiculo> vehiculos;
 
-	@PdfJsViewer
-	@Getter
-	@Setter
-	@Persistent(defaultFetchGroup = "false", columns = { @Column(name = "attachment_name"),
-			@Column(name = "attachment_mimetype"), @Column(name = "attachment_bytes") })
-	@Property()
-	@PropertyLayout(fieldSetId = "content", sequence = "1")
-	private Blob attachment;
+//	@PdfJsViewer
+//	@Getter
+//	@Setter
+//	@Persistent(defaultFetchGroup = "false", columns = { @Column(name = "attachment_name"),
+//			@Column(name = "attachment_mimetype"), @Column(name = "attachment_bytes") })
+//	@Property()
+//	@PropertyLayout(fieldSetId = "content", sequence = "1")
+//	private Blob attachment;
 
 	@Property(optionality = Optionality.OPTIONAL, editing = Editing.ENABLED)
 	@PropertyLayout(fieldSetId = LayoutConstants.FieldSetId.DETAILS, sequence = "3")
@@ -151,8 +187,10 @@ public class Usuario implements Comparable<Usuario>, CalendarEventable {
 	@Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
 	@ActionLayout(associateWith = "name", promptStyle = PromptStyle.INLINE, describedAs = "Updates the name of this object, certain characters ("
 			+ PROHIBITED_CHARACTERS + ") are not allowed.")
-	public Usuario updateName(@Name final String name) {
+	public Usuario updateName(@Name final String name, String nombre , String documento , String telefono , String email) {
 		setName(name);
+		setNombre(nombre);
+	
 		return this;
 	}
 
@@ -173,17 +211,17 @@ public class Usuario implements Comparable<Usuario>, CalendarEventable {
 
 	static final String PROHIBITED_CHARACTERS = "&%$!";
 
-	@Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
-	@ActionLayout(associateWith = "attachment", position = ActionLayout.Position.PANEL)
-	public Usuario updateAttachment(@Nullable final Blob attachment) {
-		setAttachment(attachment);
-		return this;
-	}
+//	@Action(semantics = IDEMPOTENT, commandPublishing = Publishing.ENABLED, executionPublishing = Publishing.ENABLED)
+//	@ActionLayout(associateWith = "attachment", position = ActionLayout.Position.PANEL)
+//	public Usuario updateAttachment(@Nullable final Blob attachment) {
+//		setAttachment(attachment);
+//		return this;
+//	}
 
-	@MemberSupport
-	public Blob default0UpdateAttachment() {
-		return getAttachment();
-	}
+//	@MemberSupport
+//	public Blob default0UpdateAttachment() {
+//		return getAttachment();
+//	}
 
 	@Action(semantics = NON_IDEMPOTENT_ARE_YOU_SURE)
 	@ActionLayout(fieldSetId = LayoutConstants.FieldSetId.IDENTITY, position = ActionLayout.Position.PANEL, describedAs = "Deletes this object from the persistent datastore")

@@ -29,19 +29,16 @@ import lombok.experimental.Accessors;
 public enum SimpleObject_persona
 implements Persona<Usuario, SimpleObject_persona.Builder> {
 
-    FOO("Foo", "Foo.pdf"),
-    BAR("Bar", "Bar.pdf"),
-    BAZ("Baz", null),
-    FRODO("Frodo", "Frodo.pdf"),
-    FROYO("Froyo", null),
-    FIZZ("Fizz", "Fizz.pdf"),
-    BIP("Bip", null),
-    BOP("Bop", null),
-    BANG("Bang", "Bang.pdf"),
-    BOO("Boo", null);
+    FOO("Sicolo","luciano","42402145","2995333209","luciano.sicolo@hotmail.com"),
+    BAZ("Parra","luciano","42402145","2995333209","luciano.sicolo@hotmail.com");
+
 
     private final String name;
-    private final String contentFileName;
+    private final String nombre;
+    private final String documento;
+    private final String telefono;
+    private final String email;
+   
 
     @Override
     public Builder builder() {
@@ -61,13 +58,13 @@ implements Persona<Usuario, SimpleObject_persona.Builder> {
         @Override
         protected Usuario buildResult(final ExecutionContext ec) {
 
-            val simpleObject = wrap(usuarios).create(persona.name);
+            val simpleObject = wrap(usuarios).create(persona.name,persona.nombre,persona.documento,persona.telefono,persona.email);
 
-            if (persona.contentFileName != null) {
-                val bytes = toBytes(persona.contentFileName);
-                val attachment = new Blob(persona.contentFileName, "application/pdf", bytes);
-                simpleObject.updateAttachment(attachment);
-            }
+//            if (persona.contentFileName != null) {
+//                val bytes = toBytes(persona.contentFileName);
+//                val attachment = new Blob(persona.contentFileName, "application/pdf", bytes);
+//                simpleObject.updateAttachment(attachment);
+//            }
 
             simpleObject.setLastCheckedIn(clockService.getClock().nowAsLocalDate().plusDays(fakeDataService.ints().between(-10, +10)));
 

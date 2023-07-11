@@ -22,7 +22,11 @@ import org.apache.causeway.persistence.jdo.applib.services.JdoSupportService;
 import lombok.RequiredArgsConstructor;
 
 import domainapp.modules.simple.SimpleModule;
+import domainapp.modules.simple.types.Documento;
+import domainapp.modules.simple.types.Email;
 import domainapp.modules.simple.types.Name;
+import domainapp.modules.simple.types.Nombre;
+import domainapp.modules.simple.types.Telefono;
 
 @Named(SimpleModule.NAMESPACE + ".SimpleObjects")
 @DomainService(nature = NatureOfService.VIEW)
@@ -37,8 +41,12 @@ public class Usuarios {
     @Action(semantics = SemanticsOf.NON_IDEMPOTENT)
     @ActionLayout(promptStyle = PromptStyle.DIALOG_SIDEBAR)
     public Usuario create(
-            @Name final String name) {
-        return repositoryService.persist(Usuario.withName(name));
+            @Name final String name,
+            @Nombre final String nombre,
+            @Documento final String documento,
+            @Telefono final String telefono,
+            @Email final String email) {
+        return repositoryService.persist(Usuario.withName(name,nombre,documento,telefono,email));
     }
 
 
